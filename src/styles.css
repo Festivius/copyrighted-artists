@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply m-0 p-0 box-border;
+  }
+}
+
+@layer components {
+  .icon {
+    @apply w-[5%] rounded-[10px] bg-white border-[6px] border-[#e1dcdcca] hover:bg-[rgb(255,252,250)] hover:scale-95 active:scale-90 transition-transform duration-200 ease-in-out;
+  }
+  .icon.active {
+    @apply bg-amber-100;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+  }
+  input[type="range"]:active::-webkit-slider-thumb {
+    @apply bg-amber-100;
+  }
+}

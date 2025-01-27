@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="""en"></html>
+<head>
+    <meta charset="""UTF-8">
+    <meta name="""viewport" content="width=device-width, initial-scale=1.0">
+    <title>copyrighted artists</title>
+    <link href="output.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Homemade+Apple&display=swap" rel="stylesheet">
+    <style>
+        .homemade-apple {
+            font-family: 'Homemade Apple', cursive;
+        }
+        .comic-neue-bold {
+            font-family: "Comic Neue", serif;
+            font-weight: 700;
+            font-style: normal;
+        }
+    </style>
+</head>
+<body class="bg-[#a2a860] overflow-x-hidden">
+    <div id="content" class="comic-neue-bold">
+        <div id="start-page" class="flex flex-col items-center h-[100vh] w-[100vw]">
+            <div id="heading" class="text-center mt-[6%]">
+                <h1 class="text-5xl text-white homemade-apple">copyrighted artists (unfinished)</h1>
+                <p class="text-lg text-white mt-[4%] homemade-apple">a fun game of drawing and guessing!</p>
+            </div>
+            <div id="menu" class="h-[50vh] w-[40vw] bg-[#9E7C5F] rounded-lg shadow-lg p-6 mt-[6%]">
+                <div id="tab-buttons" class="flex space-x-[2%] mb-[2%]">
+                    <button 
+                        id="rules-tab"
+                        class="px-6 py-2 rounded-lg text-[1.5vw] bg-[#fff0d6] text-[#6F5840] hover:bg-[#d6cab6] focus:outline-none focus:ring-4 focus:ring-[#8a8f50] transition duration-300 ease-in-out transform hover:scale-105">
+                        how to play
+                    </button>
+                    <button 
+                        id="play-tab"
+                        class="px-6 py-2 rounded-lg text-[1.5vw] bg-[#d0c1a6] text-[#6F5840] hover:bg-[#d6cab6] focus:outline-none focus:ring-4 focus:ring-[#8a8f50] transition duration-300 ease-in-out transform hover:scale-105">
+                        start
+                    </button>
+                </div>
+                <div id="rules" class="p-4 bg-[#fff0d6] rounded-lg shadow-inner max-h-[80%] overflow-y-auto">
+                    <ul class="list-disc list-inside text-[#6F5840] text-[1.4vw] text-wrap" style="text-indent: -1em; padding-left: 1.5em;">
+                        <li>players are split into groups of two</li>
+                        <li>one player from each pair is assigned a prompt to draw</li>
+                        <li>their partner has to try and copy their drawing</li>
+                        <li>after everyone is done, the drawings are revealed in their pairs and everyone else votes for which one they think is the original</li>
+                        <li>points are awarded for guessing correctly and for receiving votes</li>
+                    </ul>
+                </div>
+                <div id="play" class="hidden p-4 bg-white rounded-lg shadow-inner">
+                    <div id="room-controls" class="space-y-4 flex flex-col">
+                        <form id="username-form" class="flex flex-col">
+                            <input id="enter-username" type="text" placeholder="enter username (optional)" class="px-4 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-[#a2a860]">
+                        </form>
+                        <div class="flex flex-row justify-between">
+                            <form id="room-form" class="flex flex-col mb-4 w-[48%] h-auto">
+                                <input id="enter-room-code" type="text" placeholder="enter room code" class="px-4 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-[#a2a860]">
+                                <button class="h-[6vh] px-4 py-2 mt-2 rounded bg-[#91A287] text-white hover:bg-[#adbda4] focus:outline-none focus:ring-2 focus:ring-[#8a8f50]">submit</button>
+                            </form>
+                            <form id="room-create" class="flex flex-col w-[48%] h-[12.4vh]">
+                                <button id="create-room" class="h-full px-4 py-2 rounded bg-[#91A287] text-white hover:bg-[#adbda4] focus:outline-none focus:ring-2 focus:ring-[#8a8f50]">create room</button>
+                            </form>
+                        </div>
+                        <span id="room-response" class="text-red-500"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="main" class="flex-col aspect-[16/9] w-[98vw] hidden overflow-x-hidden h-[110vh]">
+            <div class="h-[20%] w-full mt-[4%]">
+                <div class="ml-[5%] h-[60%] w-[90%]">
+                    <h1 class="text-5xl text-white homemade-apple">copyrighted artists</h1>
+                </div>
+                <div id="top-bar" class="h-[40%] bg-white w-[90%] p-[0.1%] rounded-md flex ml-[5%] justify-center items-center">
+                    <div id="timer" class="flex flex-row items-center w-full absolute left-[6.3%] overflow-">
+                        <img src="images/timer.png" alt="Timer" class="w-[3.2%]">
+                        <span id="time-left" class="text-xl font-bold ml-[.9%]">20 seconds left</span>
+                    </div>
+                    <div class="flex items-center justify-center w-full">
+                        <span id="instructions" class="text-lg">Press 'Start Game' when everyone is ready!</span>
+                    </div>
+                    <div class="flex items-center absolute right-[10%]">
+                        <span id="round-number" class="text-xl font-bold">Round 0 of 8</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col w-full h-[80%] overflow-x-hidden">
+                <div class="flex flex-row space-x-[1%] ml-[5%] h-[100%] w-full mt-[1%] overflow-x-hidden">
+                    <div id="player-list" class="w-[14%] h-[79.4%] overflow-y-auto aspect-[1/2]"></div>
+                    <div class="flex flex-col w-[56%] h-full">
+                        <div id="main-screen" class="aspect-[16/10] flex flex-col w-full rounded-md bg-white">
+                            <div id="leaderboard" class="hidden flex-col items-center w-full">
+                                <div id="leaderboard-heading" class="text-2xl p-[2%] font-bold mb-4 text-center">
+                                    Leaderboard
+                                </div>
+                                <div id="leaderboard-list" class="flex flex-col space-y-2 p-4">
+                                </div>
+                            </div>
+    
+                            <div id="settings" class="hidden flex-col p-[2%] rounded-lg shadow-inner h-full w-full">
+                                <div class="text-2xl font-bold mb-4 text-center">
+                                    Settings
+                                </div>
+                                <div class="mb-4 flex space-x-[3%] items-center">
+                                    <span class="text-lg font-semibold">Room Code:</span>
+                                    <span id="room-code" class="text-lg font-mono bg-white px-2 py-1 rounded">Room Code</span>
+                                    <button id="copy-room-code" class="w-[4%] hover:bg-[#dedede]">
+                                        <img src="images/copy.png" alt="Copy">
+                                    </button>
+                                    <span id="copy-response"></span>
+                                </div>
+                                <div class="mb-4 flex space-x-[3%] items-center">
+                                    <label for="draw-time" class="text-lg font-semibold">Draw Time (seconds):</label>
+                                    <input id="draw-time" type="number" min="10" max="300" value="20" class="text-lg font-mono bg-white px-2 py-1 rounded border">
+                                </div>
+                                <div class="mb-4 flex space-x-[3%] items-center">
+                                    <label for="copy-time" class="text-lg font-semibold">Copy Time (seconds):</label>
+                                    <input id="copy-time" type="number" min="10" max="300" value="10" class="text-lg font-mono bg-white px-2 py-1 rounded border">
+                                </div>
+                                <div class="mb-4 flex space-x-[3%] items-center">
+                                    <label for="num-rounds" class="text-lg font-semibold">Number of Rounds:</label>
+                                    <input id="num-rounds" type="number" min="1" max="20" value="8" class="text-lg font-mono bg-white px-2 py-1 rounded border">
+                                </div>
+                                <div class="mt-[5%]">
+                                    <button id="start-game" class="px-6 py-2 rounded bg-[#91A287] text-white hover:bg-[#adbda4] focus:outline-none focus:ring-2 focus:ring-[#8a8f50]">Start Game</button>
+                                    <button id="back-btn" class="ml-[2%] px-4 py-2 rounded bg-[#91A287] text-white hover:bg-[#adbda4] focus:outline-none focus:ring-2 focus:ring-[#8a8f50]">Back</button>
+                                    <br>
+                                    <span id="start-game-response" class="text-red-500 mt-2 block"></span>
+                                </div>
+                            </div>
+    
+                            <div id="game" class="h-full w-full hidden justify-between bg-[#a2a860ca]">
+                                <div class="h-full w-[49.2%] flex justify-center items-center">
+                                    <button id="vote-1" class="hidden vote-button absolute mt-[20%] h-[5%] w-[15%] bg-green-300 rounded-md">Vote</button>
+                                    <canvas id="draw-canvas" height="1000" width="800" class="w-full h-full"></canvas>
+                                </div>
+                                <div class="h-full w-[49.2%] flex justify-center items-center">
+                                    <button id="vote-2" class="hidden vote-button absolute mt-[20%] h-[5%] w-[15%] bg-green-300 rounded-md">Vote</button>
+                                    <canvas id="view-canvas" height="1000" width="800" class="h-full w-full"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="toolbar" class="flex h-[10%] w-full bg-white mt-[0.9vw] rounded-md p-[1%] justify-center items-center">
+                            <div id="icon-container" class="flex w-[95%] items-center h-full space-x-[5%]">
+                                <div class="relative w-[7%] h-[80%]">
+                                    <label id="color-label" for="color" 
+                                            class="border-[0.4vw] border-[#e1dcdcdd] rounded-md h-full bg-black w-full cursor-pointer flex">
+                                    </label>
+                                    <input id="color" class="absolute inset-0 w-full h-auto opacity-0 cursor-pointer" type="color">
+                                </div>
+                                <div class="w-[50%]">
+                                    <input id="size" class="w-[70%] mt-[1%] align-top bg-gray-300 h-[30%] rounded-md appearance-none cursor-pointer" 
+                                    type="range" value="2" min="1" max="30">
+                                </div>
+                                <div class="flex space-x-[3%] w-[40%] h-full justify-end ml-[5%]">
+                                    <button id="brush" class="icon active h-full w-[14%]" onclick="selectTool('brush')">
+                                        <img src="images/brush.png" alt="Brush">
+                                    </button>
+                                    <button id="fill" class="icon h-full w-[14%]" onclick="selectTool('fill')">
+                                        <img src="images/fill.png" alt="Fill">
+                                    </button>
+                                    <div class="w-[5%]"></div>
+                                    <button id="undo" class="icon h-full w-[14%]">
+                                        <img src="images/undo.png" alt="Undo">
+                                    </button>
+                                    <button id="clear" class="icon h-full w-[14%]">
+                                        <img src="images/clear.png" alt="Clear">
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="chat-screen" class="h-[79.4%] w-[18%] bg-white rounded-md flex flex-col border-2">
+                        <ul id="messages" class="flex flex-col list-none flex-grow overflow-y-auto w-full h-full">
+                            <span class="flex items-center justify-between p-[2%] mb-[2%] bg-[#f0f0f0] text-green-600 rounded-lg">Welcome to the chat! Please try to be respectful!</span>
+                        </ul>
+                        <script>
+                            const observer = new MutationObserver(() => {
+                                const messageItems = messages.children;
+                                for (let i = 0; i < messageItems.length; i++) {
+                                    if (i % 2 === 0) {
+                                        messageItems[i].style.backgroundColor = '#f0f0f0';
+                                    } else {
+                                        messageItems[i].style.backgroundColor = '#ffffff';
+                                    }
+                                }
+                            });
+                            observer.observe(messages, { childList: true });
+                        </script>
+                        <form id="chat-form" class="flex bg-black/15 backdrop-blur-lg p-1 h-[10%] box-border">
+                            <input id="chat-input" class="border-none px-4 flex-grow rounded-full m-1 focus:outline-none w-[90%]" autocomplete="off" />
+                            <button class="border-none px-4 m-1 rounded w-[25%] hover:bg-black/10">
+                                <img src="images/send-message.png" alt="Send">
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="socket.js"></script>
+    <script src="rooms.js"></script>
+    <script src="canvas.js"></script>
+</body>
+</html>
