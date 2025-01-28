@@ -5,7 +5,6 @@ const rightCtx = rightCanvas.getContext('2d');
 
 const brush = document.getElementById('brush');
 const bucket = document.getElementById('fill');
-const undoBtn = document.getElementById('undo');
 const trash = document.getElementById('clear');
 const saveButton = document.getElementById('export');
 const color = document.getElementById('color');
@@ -42,7 +41,6 @@ brush.addEventListener('click', () => selectTool('brush'));
 size.addEventListener('input', () => setFont());
 color.addEventListener('input', () => setColor());
 color.addEventListener('click', () => setColor());
-undoBtn.addEventListener('click', () => undo());
 trash.addEventListener('click', () => resetBtn());
 
 window.addEventListener('resize', () => rescale());
