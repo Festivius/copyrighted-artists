@@ -9,6 +9,7 @@
     "build:css": "tailwindcss -i ./src/styles.css -o ./public/output.css --watch"
   },
   "dependencies": {
+    "better-sqlite3": "^11.8.1",
     "express": "^4.21.2",
     "socket.io": "^4.8.1",
     "sqlite": "^5.1.1",
