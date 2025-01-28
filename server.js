@@ -241,11 +241,10 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('chatMessage', (msg, userId, roomCode, callback) => {
+    socket.on('chatMessage', (msg, userId, roomCode) => {
         console.log('received message:', msg, userId, roomCode);
 
-        io.emit('chatMessage', msg, userId, roomCode, result.lastInsertRowid);
-        callback(result.lastInsertRowid);
+        io.emit('chatMessage', msg, userId, roomCode);
     });
     
     socket.on("disconnect", () => {

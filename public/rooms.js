@@ -193,9 +193,7 @@ chatForm.addEventListener('submit', (e) => {
     console.log('submitting chat');
     if (chatInput.value) {
         console.log('sending message:', chatInput.value);
-        socket.emit('chatMessage', chatInput.value, username, roomCodeDisplay.textContent, (lastID) => {
-            console.log('Message IDreceived:', lastID);
-        }); 
+        socket.emit('chatMessage', chatInput.value, username, roomCodeDisplay.textContent)
         chatInput.value = '';
     }
 });
