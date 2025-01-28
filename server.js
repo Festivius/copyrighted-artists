@@ -7,36 +7,10 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
-const db = new Database('canvas.db');
-const chatDB = new Database('chat.db');
-
 const players = {};
 const rooms = {};
 const pairs = {};
 
-db.exec(`
-    CREATE TABLE IF NOT EXISTS actions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        socket_id TEXT NOT NULL,
-        type TEXT NOT NULL,
-        x1 REAL,
-        y1 REAL,
-        x2 REAL,
-        y2 REAL,
-        color TEXT,
-        size REAL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
-`);
-
-chatDB.exec(`
-    CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        content TEXT,
-        user_id TEXT,
-        room TEXT
-    );
-`);
 
 app.use(express.static('public'));
 
@@ -69,18 +43,6 @@ function randomPrompt() {
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
     players[socket.id] = { partner: null, username: null, role: null, prompt: null, points: 0, canvas: null };
-    if (!socket.recovered) {
-        console.log('recovering messages');
-        try {
-            const offset = socket.handshake.auth.serverOffset || 0;
-            const rows = chatDB.prepare('SELECT id, content, user_id FROM messages WHERE id > ?').all(offset);
-            rows.forEach(row => {
-                socket.emit('chatMessage', row.content, row.user_id, row.id);
-            });
-        } catch (e) {
-            console.error('Error during message recovery:', e);
-        }
-    }
 
     function leaveRooms() {
         for (let roomCode in rooms) {
@@ -150,22 +112,9 @@ io.on('connection', (socket) => {
         }
     }
 
-    socket.on('requestDrawCanvas', () => {
-        try {
-            const query = `SELECT * FROM actions WHERE socket_id != ? ORDER BY created_at ASC`;
-            const rows = db.prepare(query).all(socket.id);
-            const partner = players[socket.id].partner;
-            io.to(partner).emit('sendDrawCanvas', rows);
-        } catch (err) {
-            console.error('Error fetching actions:', err);
-        }
-    });
-
     socket.on('draw', (data) => {
         const { type, x1, y1, x2, y2, color, size } = data;
-        const query = `INSERT INTO actions (socket_id, type, x1, y1, x2, y2, color, size) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
         try {
-            db.prepare(query).run(socket.id, type, x1, y1, x2, y2, color, size);
             socket.broadcast.emit('draw', data, socket.id, players);
         } catch (err) {
             console.error('Error saving drawing action:', err);
@@ -294,18 +243,6 @@ io.on('connection', (socket) => {
 
     socket.on('chatMessage', (msg, userId, roomCode, callback) => {
         console.log('received message:', msg, userId, roomCode);
-
-        let result;
-        try {
-            result = chatDB.prepare('INSERT INTO messages (content, user_id, room) VALUES (?, ?, ?)').run(msg, userId, roomCode);
-        } catch (e) {
-            if (e.errno === 19) {
-                callback();
-                return;
-            }
-            console.error(e);
-            return;
-        }
 
         io.emit('chatMessage', msg, userId, roomCode, result.lastInsertRowid);
         callback(result.lastInsertRowid);
