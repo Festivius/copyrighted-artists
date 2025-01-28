@@ -21,7 +21,7 @@ const chatDB = await open({
 
 const players = {};
 const rooms = {};
-let pairs;
+const pairs = {};
 
   
 await chatDB.exec(`
@@ -89,7 +89,6 @@ io.on('connection', async (socket) => {
             await chatDB.each('SELECT id, content, user_id FROM messages WHERE id > ?',
                 [offset], (_err, row) => {
                     socket.emit('chatMessage', row.content, row.user_id, row.id);
-                    console.log(row.content, row.user_id, row.id);
                 });
         } catch (e) {
             console.error('Error during message recovery:', e);
@@ -111,16 +110,23 @@ io.on('connection', async (socket) => {
     }
 
     function pairPlayers(currentRoom) {
-        for (let playerId in players) {
-            players[playerId].partner = null;
-        }
-
-        const room = rooms[currentRoom];
-        const prompt = randomPrompt();
-        pairs = [];
-
         try {
-            const unpaired = room.clients.filter(id => !players[id].partner);
+            const roomPlayers = {};
+            rooms[currentRoom].clients.forEach(clientId => {
+                roomPlayers[clientId] = players[clientId];
+            });
+            const room = rooms[currentRoom];
+            const prompt = randomPrompt();
+            pairs[currentRoom] = [];
+            let roomPairs = pairs[currentRoom];
+
+            console.log(players, roomPlayers, rooms);
+
+            Object.values(roomPlayers).forEach(player => {
+                player.partner = null;
+            });
+        
+            const unpaired = room.clients.filter(id => !roomPlayers[id].partner);
     
             for (let i = unpaired.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -136,7 +142,7 @@ io.on('connection', async (socket) => {
                 players[unpaired[i]].prompt = prompt;
                 players[unpaired[i + 1]].prompt = prompt;
 
-                pairs.push([unpaired[i], unpaired[i + 1]]);
+                roomPairs.push([unpaired[i], unpaired[i + 1]]);
             }
         
             if (unpaired.length % 2 === 1) {
@@ -150,7 +156,7 @@ io.on('connection', async (socket) => {
                 players[lastPlayer].prompt = prompt;
                 players[firstPair].prompt = prompt;
 
-                pairs.push([lastPlayer, firstPair]);
+                roomPairs.push([lastPlayer, firstPair]);
             }
         } catch (err) {
             console.error('Error pairing players:', err);
@@ -180,7 +186,6 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('updateViewCanvas', (data) => {
-        console.log('updating');
         socket.broadcast.emit('updateViewCanvas', data, socket.id, players);
     });
 
@@ -199,7 +204,6 @@ io.on('connection', async (socket) => {
         const roomCode = data.roomCode;
         const username = data.username;
 
-        console.log('username:', username);
         players[socket.id].username = username;
         if (rooms[roomCode]) {
             socket.join(roomCode);
@@ -207,13 +211,10 @@ io.on('connection', async (socket) => {
             console.log(`${socket.id} joined room: ${roomCode}`);
 
             const usernames = rooms[roomCode].clients.map(clientId => players[clientId].username);
-            console.log('usernames:', usernames);
 
             socket.emit('joinedRoom', { code: roomCode, usernames: usernames });
 
             socket.emit('joinMsg', 'Success!');
-            console.log(rooms);
-            console.log('player joined:', username);
             
             socket.broadcast.emit('playerJoined', username, roomCode);
         } else {
@@ -226,24 +227,28 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('voteFor', (data) => {
-        const vote = data.vote;
-        const pair = data.pair;
+        try {
+            const vote = data.vote;
+            const pair = data.pair;
 
-        console.log(socket.id, vote, pair);
+            console.log(socket.id, vote, pair);
 
-        if (vote) {
-            players[pair[vote]].points += 100;
-            players[pair[Math.abs(vote-1)]].points += 30;
+            if (vote) {
+                players[pair[vote]].points += 100;
+                players[pair[Math.abs(vote-1)]].points += 30;
 
-            if (players[pair[vote]].role === 'drawer') {
-                players[socket.id].points += 60;
+                if (players[pair[vote]].role === 'drawer') {
+                    players[socket.id].points += 60;
+                } else {
+                    players[socket.id].points += 20;
+                }
             } else {
-                players[socket.id].points += 20;
+                players[socket.id].points -= 20;
+                players[pair[0]].points += 60;
+                players[pair[1]].points += 60;
             }
-        } else {
-            players[socket.id].points -= 20;
-            players[pair[0]].points += 60;
-            players[pair[1]].points += 60;
+        } catch (e) {
+            console.log(e);
         }
     });
 
@@ -251,34 +256,35 @@ io.on('connection', async (socket) => {
         players[socket.id].canvas = data.imageData;
     });
 
-    socket.on('startGame', (room) => {
+    socket.on('startGame', (room, numRounds, drawTime, copyTime) => {
         if (rooms[room] && rooms[room].clients.length >= 2) {
             io.emit('startGame', room);
         } else {
-            socket.emit('startError', 'Minimum 4 players required to start the game!');
+            socket.emit('startError', room, 'Minimum 2 players required to start the game!');
             return;
         }
 
-        console.log('starting game');
+        numRounds = parseInt(numRounds);
+        drawTime = parseInt(drawTime);
+        copyTime = parseInt(copyTime);
 
         startRounds();
 
         async function startRounds() {
-            for (let round = 1; round <= 8; round++) {
-                console.log(`Starting round ${round}`);
-        
+            for (let round = 1; round <= numRounds; round++) {
                 pairPlayers(room);
-                io.emit('startRound', { room: room, players: players, round: round });
+                io.emit('startRound', { room: room, players: players, round: round, numRounds: numRounds });
                 
-                for (let i = 30; i >= 0; i--) {
-                    io.emit('updateTimer', { room: room, players: players, time: i });
+                for (let i = drawTime+copyTime; i >= 0; i--) {
+                    io.emit('updateTimer', { room: room, players: players, time: i, copyTime: copyTime });
                     await new Promise(resolve => setTimeout(resolve, 1000));
                 }
 
                 io.emit('requestCanvas', { room: room });
 
-                console.log(pairs);
-                for (let pair of pairs) {
+                console.log('starting voting with pairs:', pairs[room]);
+
+                for (let pair of pairs[room]) {
                     io.emit('startVoting', { room: room, players: players, pair: pair });
 
                     io.emit('displayCanvas1', { room: room, players: players, pair: pair });
@@ -289,11 +295,12 @@ io.on('connection', async (socket) => {
                     }
 
                     io.emit('stopVoting', { room: room, players: players, pair: pair });
-                    console.log(players);
                 }
 
+                await new Promise(resolve => setTimeout(resolve, 500));
+                console.log(players);
                 io.emit('showLeaderboard', { room: room, players: players });
-                await new Promise(resolve => setTimeout(resolve, 5000));
+                await new Promise(resolve => setTimeout(resolve, 8000));
             }
         }
     });
@@ -315,7 +322,6 @@ io.on('connection', async (socket) => {
 
         io.emit('chatMessage', msg, userId, roomCode, result.lastID);
         callback(result.lastID);
-        console.log('message broadcasted');
     });
     
     socket.on("disconnect", () => {

@@ -2,7 +2,7 @@
 <html lang="""en"></html>
 <head>
     <meta charset="""UTF-8">
-    <meta name="""viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>copyrighted artists</title>
     <link href="output.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Homemade+Apple&display=swap" rel="stylesheet">
@@ -21,10 +21,10 @@
     <div id="content" class="comic-neue-bold">
         <div id="start-page" class="flex flex-col items-center h-[100vh] w-[100vw]">
             <div id="heading" class="text-center mt-[6%]">
-                <h1 class="text-5xl text-white homemade-apple">copyrighted artists (unfinished)</h1>
+                <h1 class="text-5xl text-white homemade-apple">copyrighted artists</h1>
                 <p class="text-lg text-white mt-[4%] homemade-apple">a fun game of drawing and guessing!</p>
             </div>
-            <div id="menu" class="h-[50vh] w-[40vw] bg-[#9E7C5F] rounded-lg shadow-lg p-6 mt-[6%]">
+            <div id="menu" class="max-h-[50vh] w-[40vw] bg-[#9E7C5F] rounded-lg shadow-lg p-6 mt-[6%]">
                 <div id="tab-buttons" class="flex space-x-[2%] mb-[2%]">
                     <button 
                         id="rules-tab"
@@ -66,7 +66,7 @@
             </div>
         </div>
 
-        <div id="main" class="flex-col aspect-[16/9] w-[98vw] hidden overflow-x-hidden h-[110vh]">
+        <div id="main" class="flex-col aspect-[16/9] w-[98vw] hidden overflow-x-hidden">
             <div class="h-[20%] w-full mt-[4%]">
                 <div class="ml-[5%] h-[60%] w-[90%]">
                     <h1 class="text-5xl text-white homemade-apple">copyrighted artists</h1>
@@ -90,11 +90,11 @@
                     <div id="player-list" class="w-[14%] h-[79.4%] overflow-y-auto aspect-[1/2]"></div>
                     <div class="flex flex-col w-[56%] h-full">
                         <div id="main-screen" class="aspect-[16/10] flex flex-col w-full rounded-md bg-white">
-                            <div id="leaderboard" class="hidden flex-col items-center w-full">
-                                <div id="leaderboard-heading" class="text-2xl p-[2%] font-bold mb-4 text-center">
-                                    Leaderboard
+                            <div id="leaderboard" class="hidden flex-col items-center w-full h-full">
+                                <div id="leaderboard-heading" class="text-2xl p-[2%] font-bold mb-4 text-center flex flex-col items-center">
+                                    Leaderboard (the scores are kinda broken rn sorry :c)
                                 </div>
-                                <div id="leaderboard-list" class="flex flex-col space-y-2 p-4">
+                                <div id="leaderboard-list" class="flex flex-col space-y-2 p-4 w-full items-center h-full">
                                 </div>
                             </div>
     
@@ -130,14 +130,16 @@
                                 </div>
                             </div>
     
-                            <div id="game" class="h-full w-full hidden justify-between bg-[#a2a860ca]">
+                            <div id="game" class="h-full w-full hidden justify-between bg-[#a2a860]">
                                 <div class="h-full w-[49.2%] flex justify-center items-center">
-                                    <button id="vote-1" class="hidden vote-button absolute mt-[20%] h-[5%] w-[15%] bg-green-300 rounded-md">Vote</button>
-                                    <canvas id="draw-canvas" height="1000" width="800" class="w-full h-full"></canvas>
+                                    <span id="left-canvas-label" class="absolute mb-[30%]">Your Drawing</span>
+                                    <button id="vote-1" class="hidden vote-button absolute mt-[20%] h-[5%] w-[15%] bg-[#91A287] hover:bg-[#718068] rounded-md">Vote</button>
+                                    <canvas id="draw-canvas" height="1000" width="800" class="w-full h-full rounded-md"></canvas>
                                 </div>
                                 <div class="h-full w-[49.2%] flex justify-center items-center">
-                                    <button id="vote-2" class="hidden vote-button absolute mt-[20%] h-[5%] w-[15%] bg-green-300 rounded-md">Vote</button>
-                                    <canvas id="view-canvas" height="1000" width="800" class="h-full w-full"></canvas>
+                                    <span id="right-canvas-label" class="absolute mb-[30%]">Their Copy</span>
+                                    <button id="vote-2" class="hidden vote-button absolute mt-[20%] h-[5%] w-[15%] bg-[#91A287] hover:bg-[#718068] rounded-md">Vote</button>
+                                    <canvas id="view-canvas" height="1000" width="800" class="h-full w-full rounded-md"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -154,7 +156,7 @@
                                     <input id="size" class="w-[70%] mt-[1%] align-top bg-gray-300 h-[30%] rounded-md appearance-none cursor-pointer" 
                                     type="range" value="2" min="1" max="30">
                                 </div>
-                                <div class="flex space-x-[3%] w-[40%] h-full justify-end ml-[5%]">
+                                <div class="flex space-x-[3%] w-[45%] h-full justify-end ml-[5%]">
                                     <button id="brush" class="icon active h-full w-[14%]" onclick="selectTool('brush')">
                                         <img src="images/brush.png" alt="Brush">
                                     </button>
@@ -172,9 +174,9 @@
                             </div>
                         </div>
                     </div>
-                    <div id="chat-screen" class="h-[79.4%] w-[18%] bg-white rounded-md flex flex-col border-2">
+                    <div id="chat-screen" class="h-[86.2%] w-[18%] bg-white rounded-md flex flex-col border-2">
                         <ul id="messages" class="flex flex-col list-none flex-grow overflow-y-auto w-full h-full">
-                            <span class="flex items-center justify-between p-[2%] mb-[2%] bg-[#f0f0f0] text-green-600 rounded-lg">Welcome to the chat! Please try to be respectful!</span>
+                            <span class="flex items-center justify-between p-[2%] mb-[2%] bg-[#f0f0f0] text-green-600">Welcome to the chat! Please try to be respectful!</span>
                         </ul>
                         <script>
                             const observer = new MutationObserver(() => {

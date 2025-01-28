@@ -103,40 +103,41 @@ function addUsername(user) {
         roomResponse.textContent = 'Please choose a different username';
         return;
     }
-    const newDiv = document.createElement('div');
-    const newSpan = document.createElement('span');
-    const newPoints = document.createElement('span');
-    newDiv.id = user;
-    newSpan.textContent = user;
-    if (user === username) {
-        //newDiv.classList.add('bg-[#8a8f50]', 'text-white');
-        newSpan.textContent += ' (you)';
-    }
-    newDiv.classList.add('bg-white', 'rounded-lg', 'h-[15%]', 'p-[2%]', 'mb-[7%]', 'flex', 'items-center', 'justify-center', 'flex-col');
-    newSpan.classList.add('font-bold');
-    newPoints.textContent = '0 points';
-    newDiv.appendChild(newSpan);
-    newDiv.appendChild(newPoints);
-    plrList.appendChild(newDiv);
+    const playerDiv = document.createElement('div');
+    playerDiv.id = user;
+    playerDiv.classList.add('bg-white', 'rounded-lg', 'h-[15%]', 'p-[2%]', 'mb-[7%]', 'flex', 'items-center', 'justify-center', 'flex-col');
+    playerDiv.innerHTML = `<span>${user}</span><span>0 points</span>`;
+    if (user === username) playerDiv.innerHTML = `<span>${user} (you)</span><span>0 points</span>`;
+    plrList.appendChild(playerDiv);
     prevUser = user;
 }
 
 function startGame() {
     console.log('ssssstart???');
-    socket.emit('startGame', roomCodeDisplay.textContent);
+    socket.emit('startGame', roomCodeDisplay.textContent, document.getElementById('num-rounds').value, document.getElementById('draw-time').value, document.getElementById('copy-time').value);
 }
 
 document.getElementById('vote-1').addEventListener('click', () => {
     votingFor = 0;
-    document.getElementById('vote-1').classList.add('bg-[#000000]');
-    document.getElementById('vote-2').classList.remove('bg-[#000000]');
+    document.getElementById('vote-1').classList.add('bg-[#525e4a]');
+    document.getElementById('vote-1').classList.remove('bg-[#91A287]');
+    document.getElementById('vote-1').style.color = 'white';
+    document.getElementById('vote-2').classList.add('bg-[#91A287]');
+    document.getElementById('vote-2').classList.remove('bg-[#525e4a]');
+    document.getElementById('vote-2').style.color = 'black';
 });
 
 document.getElementById('vote-2').addEventListener('click', () => {
     votingFor = 1;
-    document.getElementById('vote-2').classList.add('bg-[#000000]');
-    document.getElementById('vote-1').classList.remove('bg-[#000000]');
+    document.getElementById('vote-2').classList.add('bg-[#525e4a]');
+    document.getElementById('vote-2').classList.remove('bg-[#91A287]');
+    document.getElementById('vote-2').style.color = 'white';
+    document.getElementById('vote-1').classList.add('bg-[#91A287]');
+    document.getElementById('vote-1').classList.remove('bg-[#525e4a]');
+    document.getElementById('vote-1').style.color = 'black';
 });
+
+// make it so that the round number and timer changes at the biegnning
 
 
 socket.on('roomCreated', (data) => {
@@ -221,11 +222,13 @@ socket.on('chatMessage', (msg, user, room) => {
     messages.scrollTo(0, messages.scrollHeight);
 });
 
-socket.on('startError', (msg) => {
+socket.on('startError', (room, msg) => {
+    if (room !== roomCodeDisplay.textContent) return;
     document.getElementById('start-game-response').textContent = msg;
 });
 
-socket.on('startGame', () => {
+socket.on('startGame', (room) => {
+    if (room !== roomCodeDisplay.textContent) return;
     console.log('starting game');
     document.getElementById('settings').style.display = 'none';
     document.getElementById('game').style.display = 'flex';
@@ -242,13 +245,17 @@ socket.on('startRound', (data) => {
     document.getElementById('leaderboard').style.display = 'none';
 
     document.querySelectorAll('.vote-button').forEach(button => button.style.display = 'none');
-    document.getElementById('round-number').textContent = `Round ${round} of 8`;
+    document.getElementById('round-number').textContent = `Round ${round} of ${data.numRounds}`;
     if (room === roomCodeDisplay.textContent) {
         const plrData = players[socket.id];
         if (plrData.role === 'drawer') {
             instructions.textContent = "Draw a " + players[socket.id].prompt + "!";
+            document.getElementById('left-canvas-label').textContent = "Your Drawing";
+            document.getElementById('right-canvas-label').textContent = players[plrData.partner].username + "'s Copy"
         } else {
             instructions.textContent = "Copy " + players[plrData.partner].username + "'s drawing!";
+            document.getElementById('left-canvas-label').textContent = "Your Copy";
+            document.getElementById('right-canvas-label').textContent = players[plrData.partner].username + "'s Drawing"
         }
     }
 });
@@ -256,11 +263,11 @@ socket.on('startRound', (data) => {
 socket.on('updateTimer', (data) => {
     if (data.room !== roomCodeDisplay.textContent) return;
     if (data.players[socket.id].role === 'drawer') {
-        if (data.time <= 10) {
+        if (data.time <= data.copyTime) {
             timer.textContent = "Time's up!";
             instructions.textContent = `Wait for ${data.players[socket.id].username} to finish copying...`;
         } else {
-            timer.textContent = `${data.time-10} seconds left`;
+            timer.textContent = `${data.time-data.copyTime} seconds left`;
         }
     } else {
         timer.textContent = `${data.time} seconds left`;
@@ -278,8 +285,12 @@ socket.on('startVoting', (data) => {
     timer.textContent = "Time's up!";
     instructions.textContent = 'Vote for which drawing you think was the original ' + data.players[socket.id].prompt + '!';
     document.querySelectorAll('.vote-button').forEach(button => button.style.display = 'block');
-    document.getElementById('vote-1').classList.remove('bg-[#000000]');
-    document.getElementById('vote-2').classList.remove('bg-[#000000]');
+    document.getElementById('vote-1').classList.add('bg-[#91A287]');
+    document.getElementById('vote-1').classList.remove('bg-[#525e4a]');
+    document.getElementById('vote-1').style.color = 'black';
+    document.getElementById('vote-2').classList.add('bg-[#91A287]');
+    document.getElementById('vote-2').classList.remove('bg-[#525e4a]');
+    document.getElementById('vote-2').style.color = 'black';
     votingFor = null;
 });
 
@@ -305,13 +316,16 @@ socket.on('showLeaderboard', (data) => {
     const room = data.room;
     const players = data.players;
     if (room !== roomCodeDisplay.textContent) return;
+    document.getElementById('leaderboard-list').innerHTML = '';
     document.getElementById('game').style.display = 'none';
     document.getElementById('leaderboard').style.display = 'flex';
     timer.textContent = "Time's up!";
     Object.values(players).forEach((player) => {
+        if (!document.getElementById(player.username)) return;
         const plrDiv = document.createElement('div');
-        plrDiv.classList.add('flex', 'items-center', 'justify-between', 'p-[2%]', 'mb-[2%]', 'bg-white', 'rounded-lg');
-        plrDiv.innerHTML = `<span>${player.username}</span><span>${player.points} points</span>`;
+        plrDiv.classList.add('flex', 'items-center', 'justify-between', 'p-[2%]', 'mb-[2%]', 'text-[#6F5840]', 'bg-[#fff0d6]', 'w-[30%]', 'h-[10%]', 'rounded-lg');
+        plrDiv.innerHTML = `<span>${player.username}</span><span>${player.points}</span>`;
+        document.getElementById(player.username).innerHTML = `<span>${player.username}</span><span>${player.points} points</span>`
         document.getElementById('leaderboard-list').appendChild(plrDiv);
     });
 });
